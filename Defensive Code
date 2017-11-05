@@ -1,0 +1,117 @@
+/*
+   Christian Kuss, Reed Kellett, Julian Lechner, Stephen Zhou
+   Blue Class MR - 11:45
+   Defensive code for robot
+   Should wait five seconds, move forward to middle of ring and start spinning
+   If another object comes at it from the weaker side then move forward to dodge and return to location and continue spinning
+*/
+
+
+#include <Servo.h>                      //import the library for the motors
+#include <LiquidCrystal.h>              //import the library for the LCD
+
+LiquidCrystal lcd(6, 5, 3, 2, 8, 4);    //set up the lcd with these pins
+Servo rightMotor;                       //Initialize the right motor
+Servo leftMotor;                        //Initialize the left motor
+const int leftSensor = 11;              // Assign sensor pins
+const int rightSensor = 7;
+const int distanceSensor = A2;          //Front sensor is analog
+int lsensorState = 0;                   // Initialize sensor variable
+int rsensorState = 0;                   //Initialize sensor variable
+float DistanceVoltage, DistanceValue;   //set up distance sensor for reading
+
+const int right_forward = 180;          //define each state of the motor for each motor
+const int right_backward = 0;
+const int left_forward = 0;
+const int left_backward = 180;
+const int stop_wheel = 90;
+
+void setup() {
+  lcd.begin(16, 2);                   //Start the lcd with segments of 16 by 2
+  pinMode(leftSensor, INPUT);         // Declare sensor pins as input
+  pinMode(rightSensor, INPUT);
+  pinMode(distanceSensor, INPUT);
+  rightMotor.attach(13);              // setup servos
+  leftMotor.attach(12);
+  Serial.begin(9600);                 // Output sensor state for testing
+  lcd.clear();
+  lcd.print("Prepare to meet");
+  lcd.setCursor(0, 1);
+  lcd.print("your doom");
+  rightMotor.write(stop_wheel);   //make sure wheels are stopped
+  leftMotor.write(stop_wheel);
+  delay(3000);                    //wait 5 seconds
+  while (lsensorState != HIGH &&/*||*/ rsensorState != HIGH) {
+    lsensorState = digitalRead(leftSensor);
+    rsensorState = digitalRead(rightSensor);
+    rightMotor.write(right_forward);
+    leftMotor.write(left_forward);
+    delay(100);
+  }
+  lcd.clear();
+  lcd.print("Turning around");
+  rightMotor.write(right_backward);                                       //turn around
+  leftMotor.write(left_forward);
+  delay(1600);                                                            //time to turn 180 degrees
+  rightMotor.write(right_forward);
+  leftMotor.write(left_forward);
+  delay(3000);
+}
+bool start = false;                     //will use for determining if going first time through loop
+void loop() {
+  DistanceValue = analogRead(distanceSensor);     //Read and store each value from sensor
+  lsensorState = digitalRead(leftSensor);
+  rsensorState = digitalRead(rightSensor);
+  DistanceVoltage = DistanceValue * (5.0 / 1023.0);   //Calculation to determine Voltage from distance sensor
+  lcd.clear();                                        //Print value of each sensor on LCD for testing
+
+  if (lsensorState == LOW/*HIGH*/ && rsensorState == LOW/*HIGH*/) {   //if reading black on both sensors back up
+    lcd.print("Backing up");
+    rightMotor.write(right_backward);
+    leftMotor.write(left_backward);
+    delay(3500);
+  }
+  else if (rsensorState == LOW/*HIGH*/) {
+    lcd.print("Watch out");
+    rightMotor.write(right_forward);
+    leftMotor.write(left_backward);
+    delay(1600);
+    rightMotor.write(right_forward);
+    leftMotor.write(left_forward);
+    delay(2500);
+  }
+  else if (lsensorState == LOW/*HIGH*/) {
+    lcd.print("Watch out");
+    rightMotor.write(right_backward);
+    leftMotor.write(left_forward);
+    delay(1600);
+    rightMotor.write(right_forward);
+    leftMotor.write(left_forward);
+    delay(2500);
+  }
+  else if (DistanceVoltage > 2.0) {                                           //if reading some thing close by
+    lcd.print("Coming for you");
+    while (lsensorState != LOW/*HIGH*/ && rsensorState != LOW/*HIGH*/) {    //while not reading black
+      lsensorState = digitalRead(leftSensor);                             //read sensor each time so that it can exit the loop
+      rsensorState = digitalRead(rightSensor);
+      rightMotor.write(right_forward);                                    //move forward
+      leftMotor.write(left_forward);
+      delay(100);
+    }
+    lcd.clear();
+    lcd.print("Psych");
+    rightMotor.write(right_backward);                                       //turn around
+    leftMotor.write(left_forward);
+    delay(1600);                                                            //time to turn 180 degrees
+    rightMotor.write(right_forward);
+    leftMotor.write(left_forward);
+    delay(3000);                                                 //move forward the same amount of time
+  }
+  else {
+    lcd.print("WEEEEEEE");
+    rightMotor.write(right_backward);                                       //if not reading anything
+    leftMotor.write(left_forward);                                          //spin in a circle
+    delay(250);
+  }
+
+}

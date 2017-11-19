@@ -21,7 +21,7 @@ const int right_backward = 0;
 const int left_forward = 0;
 const int left_backward = 180;
 const int stop_wheel = 90;
-
+//this is a comment
 void setup()
 {
   lcd.begin(16, 2);                   //Start the lcd with segments of 16 by 2

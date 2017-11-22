@@ -5,50 +5,39 @@
 */
 
 #include <Servo.h>                      //import the library for the motors
-#include <LiquidCrystal.h>              //import the library for the LCD
-
-LiquidCrystal lcd(6, 5, 3, 2, 8, 4);    //set up the lcd with these pins
 Servo rightMotor;                       //Initialize the right motor
 Servo leftMotor;                        //Initialize the left motor
 const int leftSensor = 11;              // Assign sensor pins
-const int rightSensor = 7;
-const int distanceSensor = A2;          //Front sensor is analog
+const int rightSensor = 10;
 int lsensorState = 0;                   // Initialize sensor variable
 int rsensorState = 0;                   //Initialize sensor variable
 
-const int right_forward = 180;          //define each state of the motor for each motor
-const int right_backward = 0;
-const int left_forward = 0;
-const int left_backward = 180;
+const int right_forward = 0;          //define each state of the motor for each motor
+const int right_backward = 180;
+const int left_forward = 180;
+const int left_backward = 0;
 const int stop_wheel = 90;
 //this is a comment
 void setup()
 {
-  lcd.begin(16, 2);                   //Start the lcd with segments of 16 by 2
   pinMode(leftSensor, INPUT);         // Declare sensor pins as input
   pinMode(rightSensor, INPUT);
-  pinMode(distanceSensor, INPUT);
-  rightMotor.attach(13);              // setup servos
-  leftMotor.attach(12);
-  lcd.clear();
-  lcd.print("Prepare to meet");
-  lcd.setCursor(0, 1);
-  lcd.print("your doom");
+  rightMotor.attach(12);              // setup servos
+  leftMotor.attach(9);
   rightMotor.write(stop_wheel);      //make sure wheels are stopped
   leftMotor.write(stop_wheel);
 }
 
 void loop()
 {
-  DistanceValue = analogRead(distanceSensor);         //Read and store each value from sensor
+
   lsensorState = digitalRead(leftSensor);
   rsensorState = digitalRead(rightSensor);
-  lcd.clear();                                        //Print value of each sensor on LCD for testing
   toEdge();
 }
 
 void toEdge(){
-  while(lsensorState == HIGH && rsensorState == HIGH){
+  while(lsensorState == LOW && rsensorState == LOW){
      lsensorState = digitalRead(leftSensor);                             //read sensor each time so that it can exit the loop
      rsensorState = digitalRead(rightSensor);
      rightMotor.write(right_forward);                                    //move forward

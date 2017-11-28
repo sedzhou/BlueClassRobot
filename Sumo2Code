@@ -53,3 +53,18 @@ void turnAround(){
   delay(1600);
 }
 //comment
+
+
+//s shaped movement path idea
+while(lsensorState == LOW && rsensorState == LOW)
+{
+  //turn left
+  rightMotor.write(right_forward);        // only the right wheel moves
+  leftMotor.write(left_stop);
+  delay(2000);
+  //turn right
+  rightMotor.write(right_stop);           // only the left wheel moves
+  leftMotor.write(left_forward);
+  delay(2000);
+ }
+ 
